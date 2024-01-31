@@ -44,7 +44,11 @@ const DiaryList = ({ diaryList }) => {
 	const [secondFilter, setSecondFilter] = useState("all");
 
 	const getProcessDiaryList = () => {
-		const firstFilterCallBack = (item) => item.uid === user.email;
+		const firstFilterCallBack = (item) => {
+			const isMine = item.uid === user.email;
+			if (firstFilter === "onlyMine") return isMine;
+			else return isMine || item.isPrivate === false;
+		};
 
 		const secondFilterCallBack = (item) => {
 			if (firstFilter === "good") {
@@ -63,10 +67,9 @@ const DiaryList = ({ diaryList }) => {
 		};
 
 		const copyList = JSON.parse(JSON.stringify(diaryList));
-		const firstFilterList =
-			firstFilter === "all"
-				? copyList
-				: copyList.filter((it) => firstFilterCallBack(it));
+		const firstFilterList = copyList.filter((it) =>
+			firstFilterCallBack(it)
+		);
 
 		const filterdList =
 			secondFilter === "all"

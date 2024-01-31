@@ -30,9 +30,9 @@ const App = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	// const [idxNav, setIdxNav] = useState("/Login");
 
-	const navigate = useCallback(useNavigate(), []);
+	const navigate = useNavigate();
 
-	const getData = () => {
+	const getData = useCallback(() => {
 		const getFireStoreData = async () => {
 			try {
 				const querySnapshot = await getDocs(
@@ -46,7 +46,7 @@ const App = () => {
 			}
 		};
 		getFireStoreData().then((result) => setData(result));
-	};
+	}, []);
 
 	// App 생성 시 초기 설정(INIT)
 	useEffect(() => {
@@ -59,12 +59,20 @@ const App = () => {
 			// 저장된 user 불러오기(자동 로그인)
 			const curUser = JSON.parse(localStorage.getItem("user"));
 			setUser(curUser);
-			getData();
-			navigate("/Home");
 			setIsLoading(true);
 		};
 		init();
-	}, [navigate]);
+	}, []);
+
+	// user 변경시
+	useEffect(() => {
+		if (!user) return;
+		if (user) {
+			getData();
+			navigate("/Home");
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [getData, user]);
 
 	const onCreate = useCallback(
 		async (user, date, emotion, content, isPrivate) => {
@@ -98,28 +106,31 @@ const App = () => {
 			}
 			getData();
 		},
-		[]
+		[getData]
 	);
 
-	const onRemove = useCallback(async (targetId) => {
-		try {
-			const diaryCollectionRef = collection(db, "diary");
-			const diaryDocRef = doc(diaryCollectionRef, `${targetId}`);
+	const onRemove = useCallback(
+		async (targetId) => {
 			try {
-				await deleteDoc(diaryDocRef);
-				console.log(
-					`Document with id ${targetId} successfully removed.`
-				);
-			} catch (error) {
-				console.log("Error removing document : ", error);
-			}
+				const diaryCollectionRef = collection(db, "diary");
+				const diaryDocRef = doc(diaryCollectionRef, `${targetId}`);
+				try {
+					await deleteDoc(diaryDocRef);
+					console.log(
+						`Document with id ${targetId} successfully removed.`
+					);
+				} catch (error) {
+					console.log("Error removing document : ", error);
+				}
 
-			console.log(`Remove 완료: ${targetId}`);
-		} catch (err) {
-			console.log("Error in Remove Diary: ", err);
-		}
-		getData();
-	}, []);
+				console.log(`Remove 완료: ${targetId}`);
+			} catch (err) {
+				console.log("Error in Remove Diary: ", err);
+			}
+			getData();
+		},
+		[getData]
+	);
 
 	const onEdit = useCallback(
 		async (targetId, date, emotion, content, isPrivate) => {
@@ -146,7 +157,7 @@ const App = () => {
 			}
 			getData();
 		},
-		[]
+		[getData]
 	);
 
 	return isLoading ? (
