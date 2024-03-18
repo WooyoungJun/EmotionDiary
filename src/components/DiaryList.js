@@ -51,7 +51,7 @@ const DiaryList = ({ diaryList }) => {
 		};
 
 		const secondFilterCallBack = (item) => {
-			if (firstFilter === "good") {
+			if (secondFilter === "good") {
 				return parseInt(item.emotion) <= 3;
 			} else {
 				return parseInt(item.emotion) > 3;
